@@ -1,4 +1,5 @@
 from datetime import datetime
+import random
 
 ALPH = 'abcdefghijklmnopqrstuvwxyz'
 SEP_LEN = 30
@@ -42,15 +43,24 @@ class Flight:
             self.seating_configuration.append((service_level, row_scheme))
             self.total_seats += row_scheme.count("x")
 
-    def book_seat(self, row_num: int, seat_num: str):
-        if row_num >= len(self.seating_configuration) or row_num <= 0:
+    def check_seat(self, row_num: int, seat_num: str):
+        if row_num > len(self.seating_configuration) or row_num <= 0:
             raise BookingError("Указанный ряд не существует")
         seat_idx = ALPH.find(seat_num.lower())
         if seat_idx < 0 or seat_idx >= self.seating_configuration[row_num - 1][1].count("x"):
             raise BookingError("Указанное место не существует")
+
+    def book_seat(self, row_num: int, seat_num: str):
+        self.check_seat(row_num, seat_num)
         if (row_num, seat_num) in self.booked_seats:
             raise BookingError("Место уже занято")
         self.booked_seats.add((row_num, seat_num))
+
+    def book_cancel(self, row_num: int, seat_num: str):
+        self.check_seat(row_num, seat_num)
+        if (row_num, seat_num) not in self.booked_seats:
+            raise BookingError("Место не забронировано")
+        self.booked_seats.remove((row_num, seat_num))
 
     def get_configuration(self):
         res = ["ПЛАН МЕСТ", "-" * SEP_LEN]
@@ -98,3 +108,16 @@ economy = ServiceLevel("Эконом класс")
 flight = Flight(a1, a2, datetime.now(), "S1310")
 flight.add_seats(business, 2, "xx xx")
 flight.add_seats(economy, 10, "xxx xxx")
+flight.book_seat(12,"f")
+flight.book_seat(5,"a")
+flight.book_seat(5,"b")
+flight.book_seat(5,"c")
+flight.book_seat(7,"d")
+flight.book_seat(7,"f")
+flight.book_seat(4,"b")
+flight.book_seat(3,"a")
+flight.book_seat(4,"a")
+flight.book_seat(1,"d")
+flight.book_seat(2,"b")
+flight.book_seat(10,"e")
+flight.book_seat(10,"f")

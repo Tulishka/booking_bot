@@ -19,12 +19,20 @@ def start_message(message):
 def repeat_user_message(message):
     try:
         id_seat = message.text.strip().lower()
-        flight.book_seat(int(id_seat[:-1]), id_seat[-1])
-        bot.send_message(message.chat.id, f"Место `{id_seat.upper()}` успешно забронировано", parse_mode="MarkdownV2")
-        bot.send_message(message.chat.id, "```\n" + flight.get_configuration() + "\n```", parse_mode="MarkdownV2")
+        if id_seat[0] == "-":
+            flight.book_cancel(int(id_seat[1:-1]), id_seat[-1])
+            bot.send_message(message.chat.id, f"Бронь `{id_seat.upper()}` отменена", parse_mode="MarkdownV2")
+            bot.send_message(message.chat.id, "```\n" + flight.get_configuration() + "\n```", parse_mode="MarkdownV2")
+        else:
+            flight.book_seat(int(id_seat[:-1]), id_seat[-1])
+            bot.send_message(message.chat.id, f"Место `{id_seat.upper()}` успешно забронировано\.", parse_mode="MarkdownV2")
+            bot.send_message(message.chat.id, "```\n" + flight.get_configuration() + "\n```", parse_mode="MarkdownV2")
+            bot.send_message(message.chat.id, f"Вы можете продолжать бронирование\. "
+                                              f"Для отмены брони отправь: `-{id_seat.upper()}`", parse_mode="MarkdownV2")
     except BookingError as err:
         bot.send_message(message.chat.id, str(err))
-    except Exception:
+    except Exception as err:
+        print(err)
         bot.send_message(message.chat.id, "Неверный ввод")
 
 
